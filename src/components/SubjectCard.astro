@@ -1,0 +1,31 @@
+---
+import { ArrowRight } from 'lucide-astro';
+import type { Subject } from '../data/subjects';
+
+interface Props {
+  subject: Subject;
+  count: number;
+}
+const { subject, count } = Astro.props;
+---
+
+<a
+  href={`/materias/${subject.slug}`}
+  class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+>
+  <div class={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${subject.accent ?? 'from-brand-500 to-brand-700'}`}></div>
+  <p class="text-xs font-mono font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+    {subject.sigla}
+  </p>
+  <h3 class="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-100">{subject.nome}</h3>
+  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{subject.professor}</p>
+
+  <div class="mt-4 flex items-center justify-between text-sm">
+    <span class="text-slate-400 dark:text-slate-500">
+      {count} {count === 1 ? 'resumo' : 'resumos'}
+    </span>
+    <span class="flex items-center gap-1 font-medium text-brand-600 opacity-0 transition group-hover:opacity-100 dark:text-brand-400">
+      Ver aulas <ArrowRight class="h-4 w-4" />
+    </span>
+  </div>
+</a>

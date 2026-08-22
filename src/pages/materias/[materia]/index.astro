@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import NoteCard from '../../../components/NoteCard.astro';
+import { subjects, getSubjectBySlug } from '../../../data/subjects';
+import { getNotesForSubject } from '../../../lib/notes';
+
+export async function getStaticPaths() {
+  // uma rota para cada matéria cadastrada em src/data/subjects.ts
+  return subjects.map((subject) => ({
+    params: { materia: subject.slug },
+  }));
+}
+
+const { materia } = Astro.params;
+const subject = getSubjectBySlug(materia!);
+const notes = await getNotesForSubject(materia!);
+---
+
+<BaseLayout title={subject?.nome ?? materia} description={`Resumos de ${subject?.nome}`}>
+  <p class="text-xs font-mono font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-400">
+    {subject?.sigla}
+  </p>
+  <h1 class="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">{subject?.nome}</h1>
+  <p class="mt-1 text-slate-500 dark:text-slate-400">{subject?.professor}</p>
+
+  <div class="mt-8">
+    {notes.length === 0 ? (
+      <p class="text-sm text-slate-400 dark:text-slate-500">
+        Nenhum resumo aqui ainda. Salve um arquivo .md em
+        <code class="mx-1 rounded bg-slate-200 px-1 py-0.5 dark:bg-slate-800">
+          src/content/notes/{materia}/
+        </code>
+        e rode o build novamente.
+      </p>
+    ) : (
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {notes.map((note) => <NoteCard note={note} />)}
+      </div>
+    )}
+  </div>
+</BaseLayout>

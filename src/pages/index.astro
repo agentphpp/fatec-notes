@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SubjectCard from '../components/SubjectCard.astro';
+import NoteCard from '../components/NoteCard.astro';
+import { subjects } from '../data/subjects';
+import { getAllNotes, getLatestNotes, subjectSlugOf } from '../lib/notes';
+import { CalendarClock, MapPin } from 'lucide-astro';
+
+const allNotes = await getAllNotes();
+const latest = await getLatestNotes(5);
+
+const countBySubject = Object.fromEntries(
+  subjects.map((s) => [s.slug, allNotes.filter((n) => subjectSlugOf(n) === s.slug).length])
+);
+---
+
+<BaseLayout title="Início" description="Painel de anotações do curso de DSM">
+  <section>
+    <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-100 sm:text-3xl">Minhas matérias</h1>
+    <p class="mt-1 text-slate-500 dark:text-slate-400">
+      Desenvolvimento de Software Multiplataforma — FATEC Jaú
+    </p>
+
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {subjects.map((subject) => (
+        <SubjectCard subject={subject} count={countBySubject[subject.slug] ?? 0} />
+      ))}
+    </div>
+  </section>
+
+  <section class="mt-12">
+    <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-100">Últimos resumos adicionados</h2>
+    {latest.length === 0 ? (
+      <p class="mt-3 text-sm text-slate-400 dark:text-slate-500">
+        Nenhum resumo ainda. Salve um .md dentro de <code>src/content/notes/&lt;matéria&gt;/</code> pra ele aparecer aqui.
+      </p>
+    ) : (
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {latest.map((note) => <NoteCard note={note} showSubject />)}
+      </div>
+    )}
+  </section>
+
+  <section class="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div class="flex items-center gap-3 rounded-2xl border border-dashed border-slate-300 p-5 text-slate-400 dark:border-slate-700 dark:text-slate-500">
+      <CalendarClock class="h-6 w-6 shrink-0" />
+      <div>
+        <p class="font-medium text-slate-500 dark:text-slate-400">Horário & Salas</p>
+        <p class="text-xs">Em breve — grade de horários integrada</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 rounded-2xl border border-dashed border-slate-300 p-5 text-slate-400 dark:border-slate-700 dark:text-slate-500">
+      <MapPin class="h-6 w-6 shrink-0" />
+      <div>
+        <p class="font-medium text-slate-500 dark:text-slate-400">Mapa FATEC Jaú</p>
+        <p class="text-xs">Em breve — mapa do campus e das salas</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

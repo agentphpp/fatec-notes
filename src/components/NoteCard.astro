@@ -1,0 +1,27 @@
+---
+import { FileText } from 'lucide-astro';
+import { displayTitle, formatDate, subjectSlugOf } from '../lib/notes';
+import { getSubjectBySlug } from '../data/subjects';
+import type { NoteEntry } from '../lib/notes';
+
+interface Props {
+  note: NoteEntry;
+  showSubject?: boolean;
+}
+const { note, showSubject = false } = Astro.props;
+const subject = getSubjectBySlug(subjectSlugOf(note));
+---
+
+<a
+  href={`/materias/${note.slug}`}
+  class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-700"
+>
+  <FileText class="mt-0.5 h-5 w-5 shrink-0 text-brand-500" />
+  <div class="min-w-0">
+    <p class="truncate font-medium text-slate-800 dark:text-slate-100">{displayTitle(note)}</p>
+    <p class="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+      {showSubject && subject ? `${subject.sigla} · ` : ''}
+      {formatDate(note.data.date) || 'sem data'}
+    </p>
+  </div>
+</a>

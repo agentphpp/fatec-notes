@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import NoteLayout from '../../../layouts/NoteLayout.astro';
+import { getSubjectBySlug } from '../../../data/subjects';
+import { displayTitle, formatDate, subjectSlugOf, fileSlugOf } from '../../../lib/notes';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes', ({ data }) => !data.draft);
+
+  return notes.map((note) => ({
+    params: {
+      materia: subjectSlugOf(note),
+      slug: fileSlugOf(note),
+    },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const subject = getSubjectBySlug(subjectSlugOf(note));
+const { Content, headings } = await note.render();
+---
+
+<NoteLayout
+  title={displayTitle(note)}
+  subjectName={subject?.nome ?? subjectSlugOf(note)}
+  subjectSlug={subjectSlugOf(note)}
+  dateLabel={formatDate(note.data.date)}
+  headings={headings}
+>
+  <Content />
+</NoteLayout>
