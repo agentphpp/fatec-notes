@@ -1,3 +1,12 @@
+
+---
+title: "Aula 02 – Fundamentos"
+date: 2026-08-21
+tags: ["cardinalidade", "relacionamentos"]
+---
+
+
+
 ## Overview
 - Aula sobre modelagem de dados focada em cardinalidade, relacionamentos e convenções de nomenclatura.
 - Objetivo: entender regras de negócio, tipos de relacionamentos (1:1, 1:N, N:N), generalização/especialização e boas práticas para nomes de tabelas e campos.
