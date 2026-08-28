@@ -1,6 +1,6 @@
 ---
 title: "Aula 02 – Normalização e Modelo Lógico Relacional"
-date: 2026-08-12
+date: 2026-08-28
 tags: ["banco-de-dados", "normalizacao", "modelo-logico", "sql", "mer"]
 ---
 
