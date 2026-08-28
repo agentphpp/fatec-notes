@@ -1,3 +1,11 @@
+---
+title: "Aula 02 – Normalização e Modelo Lógico Relacional"
+date: 2026-08-12
+tags: ["banco-de-dados", "normalizacao", "modelo-logico", "sql", "mer"]
+---
+
+
+
 # Resumo da Aula 02 — Normalização e Modelo Lógico Relacional
 
 **Disciplina:** Banco de Dados — Relacional (IBD015)  
