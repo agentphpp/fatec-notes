@@ -1,62 +1,98 @@
-# Aula 02 — Normalização e Passagem ao Modelo Lógico Relacional
+# Resumo da Aula 02 — Normalização e Passagem ao Modelo Lógico Relacional
 
 **Disciplina:** Banco de Dados — Relacional (IBD015)  
 **Professor:** Ronan Adriel Zenatti  
-**Instituição:** Fatec Jahu — DSM (2º Semestre/2026)
+**Instituição:** Fatec Jahu — DSM (2º Semestre/2026)  
 
 ---
 
-## 🎯 Visão Geral da Aula
-A aula abordou o processo de normalização de bancos de dados relacionais e as regras de transição do Modelo Entidade-Relacionamento (MER) para o Modelo Lógico Relacional. O foco principal consistiu em identificar falhas de modelagem que geram redundância e anomalias operacionais, aplicando as três primeiras Formas Normais (1FN, 2FN e 3FN) e praticando com dados reais por meio do exercício da Pokédex.
+## 🎯 1. Visão Geral e Objetivos
+
+Nesta aula foi abordado o processo analítico de **normalização** em bancos de dados relacionais e a **transição do Modelo Entidade-Relacionamento (MER)** para o **Modelo Lógico Relacional**.
+
+### Principais Objetivos:
+1. **Identificar e eliminar anomalias operacionais** (inserção, alteração/atualização e exclusão).
+2. **Dominar Dependências Funcionais** (parciais e transitivas).
+3. **Aplicar as três primeiras Formas Normais (1FN, 2FN e 3FN)**.
+4. **Mapear regras de passagem do MER para o Modelo Lógico**.
+5. **Praticar com dados reais** via engenharia reversa da Pokédex.
 
 ---
 
-## 🔑 Dependências Funcionais
+## ⚠️ 2. O Problema: Anomalias de Banco Desnormalizado
 
-Uma **dependência funcional** ocorre quando o valor de um atributo determina de forma única o valor de outro (exemplo: $CPF \rightarrow Nome$).
+Quando uma tabela não está normalizada, surgem três falhas operacionais clássicas:
 
-* **Dependência Parcial:** Ocorre quando um atributo depende apenas de uma parte de uma chave primária composta.
-  * *Exemplo:* Na tabela `ItemPedido(pedido_id, produto_id)`, a `quantidade` depende da chave inteira, mas o `preco_unitario` depende apenas de `produto_id`.
-* **Dependência Transitiva:** Ocorre quando um atributo depende de outro atributo que não é chave primária (dependência indireta ou via chave estrangeira).
-  * *Exemplo:* Em uma tabela de inscrições com `cpf`, `disciplina_id` e `nome_disciplina`, o `nome_disciplina` depende de `disciplina_id`, e não do `cpf` do aluno.
+* **Anomalia de Inserção:** Impossibilidade de cadastrar um dado sem inventar um registro fictício (ex.: cadastrar um produto novo sem que nenhum pedido tenha sido feito ainda).
+* **Anomalia de Atualização:** Risco de inconsistência ao alterar um dado repetido em múltiplos locais (ex.: atualizar o endereço do cliente e esquecer algumas linhas).
+* **Anomalia de Exclusão:** Perda não intencional de dados ao deletar um registro associado (ex.: cancelar o único pedido de um cliente e apagar todo o cadastro dele).
 
 ---
 
-## 📐 As Três Formas Normais (1FN, 2FN, 3FN)
+## 🔑 3. Dependências Funcionais (DF)
 
-O objetivo central da normalização é eliminar anomalias de inserção, alteração e exclusão, além de reduzir redundâncias.
+Conceito fundamentado em álgebra relacional: $A 
+ightarrow B$ ("A determina B") significa que, conhecido o valor de **A**, existe um único valor correspondente para **B**.
 
-| Forma Normal | Pré-requisito | Regra Principal | Solução Prática |
+* **Dependência Parcial:** Ocorre quando um atributo depende apenas de **parte** de uma chave primária composta (viola a **2FN**).
+  * *Exemplo:* Em `ItemPedido(pedido_id, produto_id)`, a `quantidade` depende de ambos os IDs, mas `preco_unitario` e `nome_produto` dependem apenas de `produto_id`.
+* **Dependência Transitiva:** Ocorre quando um atributo depende de outro atributo que **não é chave primária** (viola a **3FN**).
+  * *Exemplo:* Em `Inscricao(cpf, disciplina_id, nome_disciplina)`, o `nome_disciplina` depende de `disciplina_id`, que por sua vez depende do `cpf`.
+
+---
+
+## 📐 4. As Três Formas Normais (1FN, 2FN, 3FN)
+
+| Forma Normal | Pré-requisito | Regra Principal | Solução Prática / O que Elimina |
 | :--- | :--- | :--- | :--- |
-| **1FN** | Nenhum | Atributos devem ser atômicos (sem campos multivalorados ou repetições). | Criar uma nova tabela para atributos multivalorados (ex.: tabela `Telefones`). Evitar colunas como `tel1`, `tel2`. |
-| **2FN** | Estar na 1FN | Atributos não-chave devem depender da totalidade da chave primária (sem dependência parcial). | Separar os atributos que dependem apenas de parte da chave composta em uma nova tabela. |
-| **3FN** | Estar na 2FN | Não pode haver dependências transitivas (atributos não-chave dependendo de outros não-chave). | Mover dados repetidos/indiretos para tabelas próprias e manter apenas a chave estrangeira. |
+| **1FN** | Nenhum | Atributos devem ser **atômicos** (sem campos multivalorados ou grupos repetidos/colunas numeradas). | Extrair multivalorados para nova tabela (ex.: `Telefones`). Eliminar colunas como `tel1`, `tel2`. |
+| **2FN** | Estar na 1FN | Atributos não-chave devem depender da **totalidade** da chave primária composta. | Mover atributos com dependência parcial para uma nova tabela própria (ex.: `Produtos`). |
+| **3FN** | Estar na 2FN | **Sem dependências transitivas** (atributo não-chave dependendo de outro não-chave). | Extrair atributos indiretos para tabela própria e manter apenas a Chave Estrangeira (FK). |
 
 ---
 
-## 💡 Discussões e Práticas Recomendadas pelo Professor
+## 🔄 5. Passagem do MER ao Modelo Lógico Relacional
 
-* **Chave Composta vs. Chave Surrogate (ID Próprio):** Chaves compostas garantem unicidade estrutural no banco, mas chaves *surrogate* (IDs autoincrementais) simplificam o desenvolvimento e permitem entradas duplicadas do mesmo item caso a regra de negócio exija.
-* **Regras de Negócio x Banco de Dados:** A integridade estrutural é mantida pelo banco de dados, enquanto certas regras operacionais e de interface devem ser tratadas pela camada de aplicação.
-* **Modelagem Prática:** A normalização exige equilíbrio. A aplicação rígida da norma sem avaliar o contexto do usuário pode gerar sistemas excessivamente fragmentados.
+Regras determinísticas para conversão do diagrama conceitual para o modelo lógico:
+
+1. **Entidades:** Convertidas diretamente em tabelas.
+2. **Relacionamento 1:1:** A FK vai para o lado de **participação parcial** (mínimo 0) com restrição `UNIQUE` (evita linhas nulas e garante cardinalidade 1:1).
+3. **Relacionamento 1:N:** A chave primária do lado **1** vira Chave Estrangeira (FK) na tabela do lado **N**.
+4. **Relacionamento N:M:** Gera uma **tabela intermediária (associativa)** cuja PK é composta pelas FKs das duas tabelas originais, além de guardar os atributos do próprio relacionamento (ex.: `quantidade`, `nota`).
+5. **Entidade Fraca:** Tabela com PK composta contendo a FK da entidade forte + sua chave parcial.
+6. **Atributos Multivalorados:** Convertidos em nova tabela relacionada por FK.
 
 ---
 
-## 🎮 Exercício Prático em Sala: Modelagem da Pokédex
+## 💡 6. Discussões Téporas & Boas Práticas de Sala
 
-* **Objetivo:** Fazer engenharia reversa do modelo de dados a partir das informações visuais públicas do site da Pokédex.
+* **Chave Substituta (*Surrogate Key*) vs. Chave Natural:**
+  * **Chave Natural** (ex.: CPF, Matrícula, CNPJ) pode mudar no mundo real, é mais lenta para indexar e espalha dados sensíveis (LGPD).
+  * **Chave Substituta (`id_tabela`)** é imutável, leve (`BIGINT`), rápida para índices e isola dados sensíveis.
+  * **Padrão adotado na disciplina:** PK é sempre `id_tabela` (singular). Chaves naturais viram atributos comuns protegidos por `UNIQUE`.
+* **Convenção de Nomenclatura SQL:**
+  * **PK:** `id_tabela` (ex.: `id_cliente`).
+  * **FK:** `tabela_id` (ex.: `cliente_id`).
+* **Regras de Negócio vs. Banco de Dados:** O banco garante a integridade estrutural e tipagem, enquanto certas regras operacionais flexíveis devem ser geridas pela aplicação.
+
+---
+
+## 🎮 7. Prática em Sala: Exercício da Pokédex
+
+* **Atividade:** Engenharia reversa do modelo de dados a partir das telas e informações públicas do site da Pokédex oficial.
 * **Formato:** Trabalho em duplas.
 * **Diretrizes:**
-  * Utilizar estritamente os dados visíveis na interface do site (sem aplicar conhecimento prévio sobre a franquia Pokémon).
-  * Mapear atributos multivalorados (ex.: tipos, fraquezas) e separar as entidades aplicando 1FN, 2FN e 3FN.
-  * Definir chaves primárias e relacionamentos adequados para suportar a estrutura visual exibida.
+  * Utilizar estritamente os dados visíveis na interface (sem conhecimento prévio da franquia).
+  * Tratar atributos multivalorados (ex.: tipos, fraquezas, habilidades).
+  * Aplicar a normalização (1FN $
+ightarrow$ 2FN $
+ightarrow$ 3FN) e definir relacionamentos e PKs/FKs corretas.
 
 ---
 
-## 🔄 Passagem do MER ao Modelo Lógico Relacional
+## 🔑 Termos-Chave & Definições
 
-1. **Entidades:** Tornam-se tabelas no modelo lógico.
-2. **Relacionamentos 1:N:** A chave primária do lado "1" torna-se chave estrangeira (FK) na tabela do lado "N".
-3. **Relacionamentos N:M:** Transforma-se em uma nova tabela intermediária contendo as chaves estrangeiras das duas tabelas originais (formando uma chave composta ou utilizando chave *surrogate*).
-4. **Relacionamentos 1:1:** A chave estrangeira é inserida na tabela que fizer mais sentido operacional ou onde a participação for obrigatória.
-5. **Atributos Multivalorados:** Convertidos em uma nova tabela relacionada por chave estrangeira.
+* **Valor Atômico:** Dado indivisível (um único valor por célula/campo).
+* **Tabela Associativa:** Tabela criada para resolver relacionamentos N:M.
+* **Chave Composta:** PK constituída por duas ou mais colunas.
+* **Chave Substituta (*Surrogate Key*):** ID numérico sequencial gerado pelo sistema sem valor de negócio.
